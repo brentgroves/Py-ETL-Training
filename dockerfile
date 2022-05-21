@@ -23,6 +23,7 @@ ARG ZEEP_VER=4.1.0
 ARG PYODBC_VER=4.0.32 
 ARG PANDAS_VER=1.4.2
 FROM ubuntu:${UBUNTU_VER}
+# FROM ubuntu:20.04
 
 # System packages 
 RUN apt-get update && apt-get install -yq curl wget jq vim
@@ -59,34 +60,53 @@ COPY *.py .
 COPY *.wsdl .
 COPY PROGRESS_DATADIRECT_OPENACCESS_OAODBC_8.1.0.HOTFIX_LINUX_64.tar .
 RUN tar -xf PROGRESS_DATADIRECT_OPENACCESS_OAODBC_8.1.0.HOTFIX_LINUX_64.tar
-COPY ./PlexDriverInstall.py .
+COPY ./PlexDriverInstall.py ./
 
-RUN sudo apt-get update && apt-get install -y \
+# https://futurestud.io/tutorials/ubuntu-debian-fix-sudo-command-not-found
+# Open question.  Do I need to run as non-root user
+# https://code.visualstudio.com/remote/advancedcontainers/add-nonroot-user#:~:text=Many%20Docker%20images%20use%20root,that%20you%20should%20know%20about.
+# RUN apt-get install sudo -y 
+
+# had problems installing all of this on one layer.
+RUN apt-get update && apt-get install -y \
   ksh \
   apt-utils \
-  neofetch \
+  neofetch 
+
+RUN apt-get install -y \
   apt-transport-https \
   ca-certificates \
   curl \
+  dnsutils \
+  iputils-ping \
+  netcat
+
+RUN apt-get install -y \
   gpg \
   git \
+  tree \
+  jq 
+
+RUN apt-get install -y \
   software-properties-common \
   wget \
-  && sudo rm -rf /var/lib/apt/lists/*
+  && rm -rf /var/lib/apt/lists/*
 
-RUN curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
-RUN sudo curl https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/prod.list > /etc/apt/sources.list.d/mssql-release.list
+RUN curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
+RUN curl https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/prod.list > /etc/apt/sources.list.d/mssql-release.list
 
-RUN sudo apt-get update
-RUN sudo DEBIAN_FRONTEND=noninteractive ACCEPT_EULA=Y apt-get install -y msodbcsql17
-RUN sudo DEBIAN_FRONTEND=noninteractive ACCEPT_EULA=Y apt-get install -y mssql-tools
+RUN apt-get update
+RUN DEBIAN_FRONTEND=noninteractive ACCEPT_EULA=Y apt-get install -y msodbcsql17
+RUN DEBIAN_FRONTEND=noninteractive ACCEPT_EULA=Y apt-get install -y mssql-tools
 RUN echo 'export PATH="$PATH:/opt/mssql-tools/bin"' >> ~/.bashrc
 
-RUN sudo DEBIAN_FRONTEND=noninteractive ACCEPT_EULA=Y apt-get install -y msodbcsql18
-RUN sudo DEBIAN_FRONTEND=noninteractive ACCEPT_EULA=Y apt-get install -y mssql-tools18
+RUN DEBIAN_FRONTEND=noninteractive ACCEPT_EULA=Y apt-get install -y msodbcsql18
+RUN DEBIAN_FRONTEND=noninteractive ACCEPT_EULA=Y apt-get install -y mssql-tools18
 RUN echo 'export PATH="$PATH:/opt/mssql-tools18/bin"' >> ~/.bashrc
-RUN sudo DEBIAN_FRONTEND=noninteractive apt-get install -y unixodbc-dev
-ber
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y unixodbc-dev
+
+# RUN apt-get install -y powershell
+
 RUN python PlexDriverInstall.py 
 COPY ./odbc.ini /etc/
 COPY ./odbc64.ini /usr/oaodbc81/

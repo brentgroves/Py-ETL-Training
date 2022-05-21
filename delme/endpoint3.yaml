@@ -1,0 +1,20 @@
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: backend-mobile-db-service
+spec:
+  type: ExternalName
+  ports:
+  - port: 1433
+---
+kind: Endpoints
+apiVersion: v1
+metadata:
+  name: backend-mobile-db-service
+subsets:
+  - addresses:
+        - ip: 10.1.2.74
+    ports:
+      - port: 1433
+        name: backend-mobile-db-service

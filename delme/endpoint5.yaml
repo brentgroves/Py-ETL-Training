@@ -1,0 +1,7 @@
+kind: "Service"
+apiVersion: "v1"
+metadata:
+  name: "buschesql"
+spec:
+  type: ExternalName
+  externalName: "10.1.2.74"

@@ -1,0 +1,24 @@
+#Service created in an attempt to contact external SQL Server DB
+apiVersion: v1
+kind: Service
+metadata:
+ name: ext-sql-service
+spec:
+ type: NodePort
+ ports:
+ - port: 1433
+   targetPort: 1433
+---
+kind: "Endpoints"
+apiVersion: "v1"
+metadata:
+  name: "ext-sql-service"
+subsets:
+  -
+    addresses:
+      -
+        ip: "10.1.2.74"
+    ports:
+      -
+        port: 1433
+        name: "ext-sql-service"
