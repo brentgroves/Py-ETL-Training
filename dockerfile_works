@@ -25,61 +25,8 @@ ARG PANDAS_VER=1.4.2
 FROM ubuntu:${UBUNTU_VER}
 # FROM ubuntu:20.04
 
-
-# https://futurestud.io/tutorials/ubuntu-debian-fix-sudo-command-not-found
-# Open question.  Do I need to run as non-root user
-# https://code.visualstudio.com/remote/advancedcontainers/add-nonroot-user#:~:text=Many%20Docker%20images%20use%20root,that%20you%20should%20know%20about.
-# RUN apt-get install sudo -y 
-
-# had problems installing all of this on one layer.
-RUN apt-get update && apt-get install -yq \
-  ksh \
-  apt-utils \
-  neofetch \
-  jq \
-  vim
-
-RUN apt-get install -yq \
-  apt-transport-https \
-  ca-certificates \
-  curl \
-  dnsutils \
-  iputils-ping \
-  netcat
-
-RUN apt-get install -yq \
-  gpg \
-  git \
-  tree \
-  jq 
-
-RUN apt-get install -yq \
-  software-properties-common \
-  wget \
-  msmtp \
-  msmtp-mta \
-  mailutils \ 
-  && rm -rf /var/lib/apt/lists/*
-
-COPY ./msmtprc /etc/msmtprc
-COPY ./mail.rc /etc/mail.rc
-COPY ./aliases /etc/aliases
-
-
-RUN curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
-RUN curl https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/prod.list > /etc/apt/sources.list.d/mssql-release.list
-
-RUN apt-get update
-RUN DEBIAN_FRONTEND=noninteractive ACCEPT_EULA=Y apt-get install -y msodbcsql17
-RUN DEBIAN_FRONTEND=noninteractive ACCEPT_EULA=Y apt-get install -y mssql-tools
-RUN echo 'export PATH="$PATH:/opt/mssql-tools/bin"' >> ~/.bashrc
-
-RUN DEBIAN_FRONTEND=noninteractive ACCEPT_EULA=Y apt-get install -y msodbcsql18
-RUN DEBIAN_FRONTEND=noninteractive ACCEPT_EULA=Y apt-get install -y mssql-tools18
-RUN echo 'export PATH="$PATH:/opt/mssql-tools18/bin"' >> ~/.bashrc
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y unixodbc-dev
-
-# RUN apt-get install -y powershell
+# System packages 
+RUN apt-get update && apt-get install -yq curl wget jq vim
 
 # Use the above args during building https://docs.docker.com/engine/reference/builder/#understand-how-arg-and-from-interact
 ARG CONDA_VER
@@ -115,6 +62,50 @@ COPY PROGRESS_DATADIRECT_OPENACCESS_OAODBC_8.1.0.HOTFIX_LINUX_64.tar .
 RUN tar -xf PROGRESS_DATADIRECT_OPENACCESS_OAODBC_8.1.0.HOTFIX_LINUX_64.tar
 COPY ./PlexDriverInstall.py ./
 
+# https://futurestud.io/tutorials/ubuntu-debian-fix-sudo-command-not-found
+# Open question.  Do I need to run as non-root user
+# https://code.visualstudio.com/remote/advancedcontainers/add-nonroot-user#:~:text=Many%20Docker%20images%20use%20root,that%20you%20should%20know%20about.
+# RUN apt-get install sudo -y 
+
+# had problems installing all of this on one layer.
+RUN apt-get update && apt-get install -y \
+  ksh \
+  apt-utils \
+  neofetch 
+
+RUN apt-get install -y \
+  apt-transport-https \
+  ca-certificates \
+  curl \
+  dnsutils \
+  iputils-ping \
+  netcat
+
+RUN apt-get install -y \
+  gpg \
+  git \
+  tree \
+  jq 
+
+RUN apt-get install -y \
+  software-properties-common \
+  wget \
+  && rm -rf /var/lib/apt/lists/*
+
+RUN curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
+RUN curl https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/prod.list > /etc/apt/sources.list.d/mssql-release.list
+
+RUN apt-get update
+RUN DEBIAN_FRONTEND=noninteractive ACCEPT_EULA=Y apt-get install -y msodbcsql17
+RUN DEBIAN_FRONTEND=noninteractive ACCEPT_EULA=Y apt-get install -y mssql-tools
+RUN echo 'export PATH="$PATH:/opt/mssql-tools/bin"' >> ~/.bashrc
+
+RUN DEBIAN_FRONTEND=noninteractive ACCEPT_EULA=Y apt-get install -y msodbcsql18
+RUN DEBIAN_FRONTEND=noninteractive ACCEPT_EULA=Y apt-get install -y mssql-tools18
+RUN echo 'export PATH="$PATH:/opt/mssql-tools18/bin"' >> ~/.bashrc
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y unixodbc-dev
+
+# RUN apt-get install -y powershell
 
 RUN python PlexDriverInstall.py 
 COPY ./odbc.ini /etc/
